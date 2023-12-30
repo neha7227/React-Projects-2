@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-export default function States() {
+export default function CitySelector() {
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
   const [cities, setCities] = useState([]);

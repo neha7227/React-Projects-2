@@ -1,11 +1,11 @@
 import logo from './logo.svg';
 import './App.css';
-import States from './components/States';
+import CitySelector from './components/CitySelector';
 
 function App() {
   return (
     <div className="App">
-      <States/>
+      <CitySelector/>
     </div>
   );
 }
