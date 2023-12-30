@@ -1,103 +1,225 @@
 import React, { useState } from "react";
-import styles from "../components/Calculator.module.css";
+// import styles from "../components/Calculator.module.css";
+
+// export default function Calculator({}) {
+// import logo from './logo.svg';
+// import './App.css';
+// // import Calculator from './components/Calculator.jsx';
+
+// function App() {
+//   return (
+//     <div className="App">
+// {/* <Calculator/> */}
+//     </div>
+//   );
+// }
+
+// export default App;
+
+import { useReducer } from "react";
+import DigitButton from "../DigitButton";
+import OperationButton from "../OperationButton";
+import "../styles.css";
+
+export const ACTIONS = {
+  ADD_DIGIT: "add-digit",
+  CHOOSE_OPERATION: "choose-operation",
+  CLEAR: "clear",
+  DELETE_DIGIT: "delete-digit",
+  EVALUATE: "evaluate",
+};
+// function reducer (prevState, nextState)
+//function reducer (state, action)
+// const {type, payload} = action --> destructuring content of action
+function reducer(state, { type, payload }) {
+  //function reducer (state, action){}
+  // const {type, payload} = action --> destructuring content of action
+  switch (type) {
+    case ACTIONS.ADD_DIGIT:
+      if (state.overwrite) {
+        return {
+          ...state,
+          currentOperand: payload.digit,
+          overwrite: false,
+        };
+      }
+      if (payload.digit === "0" && state.currentOperand === "0") {
+        return state;
+      }
+      if (payload.digit === "." && state.currentOperand.includes(".")) {
+        return state;
+      }
+
+      return {
+        ...state,
+        currentOperand: `${state.currentOperand || ""}${payload.digit}`,
+      };
+    case ACTIONS.CHOOSE_OPERATION:
+      if (state.currentOperand == null && state.previousOperand == null) {
+        return state;
+      }
+
+      if (state.currentOperand == null) {
+        return {
+          ...state,
+          operation: payload.operation,
+        };
+      }
+
+      if (state.previousOperand == null) {
+        return {
+          ...state,
+          operation: payload.operation,
+          previousOperand: state.currentOperand,
+          currentOperand: null,
+        };
+      }
+
+      return {
+        ...state,
+        previousOperand: evaluate(state),
+        operation: payload.operation,
+        currentOperand: null,
+      };
+    case ACTIONS.CLEAR:
+      return {};
+    case ACTIONS.DELETE_DIGIT:
+      if (state.overwrite) {
+        return {
+          ...state,
+          overwrite: false,
+          currentOperand: null,
+        };
+      }
+      if (state.currentOperand == null) return state;
+      if (state.currentOperand.length === 1) {
+        return { ...state, currentOperand: null };
+      }
+
+      return {
+        ...state,
+        currentOperand: state.currentOperand.slice(0, -1),
+      };
+    case ACTIONS.EVALUATE:
+      if (
+        state.operation == null ||
+        state.currentOperand == null ||
+        state.previousOperand == null
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        overwrite: true,
+        previousOperand: null,
+        operation: null,
+        currentOperand: evaluate(state),
+      };
+  }
+}
+
+function evaluate({ currentOperand, previousOperand, operation }) {
+  const prev = parseFloat(previousOperand);
+  const current = parseFloat(currentOperand);
+  if (isNaN(prev) || isNaN(current)) return "";
+  let computation = "";
+  switch (operation) {
+    case "+":
+      computation = prev + current;
+      break;
+    case "-":
+      computation = prev - current;
+      break;
+    case "*":
+      computation = prev * current;
+      break;
+    case "÷":
+      computation = prev / current;
+      break;
+  }
+
+  return computation.toString();
+}
+
+const INTEGER_FORMATTER = new Intl.NumberFormat("en-us", {
+  maximumFractionDigits: 0,
+});
+function formatOperand(operand) {
+  if (operand == null) return;
+  const [integer, decimal] = operand.split(".");
+  if (decimal == null) return INTEGER_FORMATTER.format(integer);
+  return `${INTEGER_FORMATTER.format(integer)}.${decimal}`;
+}
 
 export default function Calculator({}) {
-  // return (
-  //   <div>
-  //     <h1>React Calculator</h1>
-  //     <input type="text"></input>
-  //     <div className={styles.container}>
-  //       <button className={styles.btn}>7</button>
-  //       <button className={styles.btn}>8</button>
-  //       <button className={styles.btn}>9</button>
-  //       <button className={styles.btn}>+</button>
-  //       <button className={styles.btn}>4</button>
-  //       <button className={styles.btn}>5</button>
-  //       <button className={styles.btn}>6</button>
-  //       <button className={styles.btn}>-</button>
-  //       <button className={styles.btn}>1</button>
-  //       <button className={styles.btn}>2</button>
-  //       <button className={styles.btn}>3</button>
-  //       <button className={styles.btn}>*</button>
-  //       <button className={styles.btn}>C</button>
-  //       <button className={styles.btn}>0</button>
-  //       <button className={styles.btn}>=</button>
-  //       <button className={styles.btn}>/</button>
-  //     </div>
-  //   </div>
-  // );
-  const [display, setDisplay] = useState("");
-  const [expression, setExpression] = useState([]);
-
-  const handleClick = (value) => {
-    setDisplay(value);
-    setExpression([...expression, value]);
-    console.log(expression);
-  };
-
-  const handleResult = () => {
-    const result = expression
-      .join("")
-      .split(/(\D)/g)
-      .map((value) => (value.match(/\d/g) ? parseInt(value, 0) : value))
-      .reduce((acc, value, index, array) => {
-        switch (value) {
-          case "+":
-            return (acc = acc + array[index + 1]);
-          case "-":
-            return (acc = acc - array[index + 1]);
-          case "x":
-            return (acc = acc * array[index + 1]);
-          case "÷":
-            return (acc = acc / array[index + 1]);
-          case "C":
-            return setDisplay("");
-          default:
-            return acc;
-        }
-      });
-    setDisplay(result);
-    setExpression("");
-  };
+  // const [form, setForm] = useReducer(reducerFunction, initialState)
+  // const [form, dispatch ]= useReducer()
+  // dispatch --> same as setter function in useState
+  // payload --> universal key in setter function dispatch
+  // type -> its showing the type of value to be set by setter function dispatch from the sent payload.
+  // const []
+  const [{ currentOperand, previousOperand, operation }, dispatch] = useReducer(
+    reducer,
+    {}
+  );
 
   return (
-    <div className="App">
-      <h3 className={styles.display}>{display}</h3>
+    <>
+      <h1>React Calculator</h1>
+      <div className="calculator-grid">
+        <div className="output">
+          <input
+            type="text"
+            onClick={() =>
+              dispatch({
+                type: ACTIONS.ADD_DIGIT,
+                payload: { currentOperand, previousOperand, operation },
+              })
+            }
+          ></input>
+          <div className="previous-operand">
+            {formatOperand(previousOperand)}
+          </div>
+          <div className="current-operand">
+            {formatOperand(previousOperand)} {operation}{" "}
+            {formatOperand(currentOperand)}
+          </div>
+        </div>
 
-      <span className={styles.expression}>{expression}</span>
+        {/* <button onClick={() => dispatch({ type: ACTIONS.DELETE_DIGIT })}>
+        DEL
+      </button> */}
 
-      <section className={styles.panel}>
-        <section className={styles.numbers}>
-          <button onClick={() => handleClick(7)}>7</button>
-          <button onClick={() => handleClick(8)}>8</button>
-          <button onClick={() => handleClick(9)}>9</button>
+        <DigitButton digit="7" dispatch={dispatch} />
+        <DigitButton digit="8" dispatch={dispatch} />
+        <DigitButton digit="9" dispatch={dispatch} />
+        <OperationButton operation="+" dispatch={dispatch} />
+        <DigitButton digit="4" dispatch={dispatch} />
+        <DigitButton digit="5" dispatch={dispatch} />
+        <DigitButton digit="6" dispatch={dispatch} />
 
-          <button onClick={() => handleClick(4)}>4</button>
-          <button onClick={() => handleClick(5)}>5</button>
-          <button onClick={() => handleClick(6)}>6</button>
-
-          <button onClick={() => handleClick(1)}>1</button>
-          <button onClick={() => handleClick(2)}>2</button>
-          <button onClick={() => handleClick(3)}>3</button>
-
-          <button onClick={() => handleClick(0)}>0</button>
-          <button onClick={() => handleClick("÷")}>÷</button>
-          <button onClick={() => handleClick("x")}>x</button>
-          <button onClick={() => handleClick("-")}>-</button>
-          <button onClick={() => handleClick("+")}>+</button>
-          <button onClick={() => handleResult()}>=</button>
-          <button onClick={() => handleResult()}>C</button>
-        </section>
-
-        {/* <section className={styles.numbers}>
-          <button onClick={() => handleClick("÷")}>÷</button>
-          <button onClick={() => handleClick("x")}>x</button>
-          <button onClick={() => handleClick("-")}>-</button>
-          <button onClick={() => handleClick("+")}>+</button>
-          <button onClick={() => handleResult()}>=</button>
-          <button onClick={() => handleResult()}>C</button>
-        </section> */}
-      </section>
-    </div>
+        <OperationButton operation="-" dispatch={dispatch} />
+        <DigitButton digit="1" dispatch={dispatch} />
+        <DigitButton digit="2" dispatch={dispatch} />
+        <DigitButton digit="3" dispatch={dispatch} />
+        <OperationButton operation="*" dispatch={dispatch} />
+        {/* <DigitButton digit="." dispatch={dispatch} /> */}
+        <button
+          // className="span-two"
+          onClick={() => dispatch({ type: ACTIONS.CLEAR })}
+        >
+          C
+        </button>
+        <DigitButton digit="0" dispatch={dispatch} />
+        <button
+          // className="span-two"
+          onClick={() => dispatch({ type: ACTIONS.EVALUATE })}
+        >
+          =
+        </button>
+        <OperationButton operation="/" dispatch={dispatch} />
+      </div>
+    </>
   );
 }

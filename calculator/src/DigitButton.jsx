@@ -1,4 +1,4 @@
-import { ACTIONS } from "./App";
+import { ACTIONS } from "./App_old";
 
 export default function DigitButton({ dispatch, digit }) {
   return (

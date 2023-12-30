@@ -48,15 +48,20 @@ button {
 }
 
 .panel {
-  display: flex;
+  /* display: flex;
+  justify-content: center; */
+  display: grid;
+  margin-top: 2rem;
   justify-content: center;
+  grid-template-columns: repeat(4, 6rem);
+  grid-template-rows: minmax(7rem, auto) repeat(5, 6rem);
 }
 
 .numbers {
-  display: flex;
+  /* display: flex;
   flex-flow: wrap;
   flex-wrap: wrap;
-  justify-items: stretch;
+  justify-items: stretch; */
   width: 90px;
 }
 
